@@ -4,6 +4,7 @@ import Head from "next/head"
 import Link from "next/link"
 import { SEO } from "@/components/SEO"
 import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -80,33 +81,28 @@ export default function Home() {
         url="/"
       />
       <Head>
-        <meta name="theme-color" content="#0A66FF" />
+        <title>Springfield Events - Your week at a glance</title>
       </Head>
 
-      <main className="min-h-screen bg-background text-foreground">
-        <section className="relative overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-hero opacity-90" />
-          <div className="relative z-10">
-            <div className="mx-auto max-w-6xl px-6 py-16 md:py-20">
-              <div className="flex flex-col items-start gap-6">
-                <span className="inline-flex items-center rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
-                  Springfield • Next 7 Days
-                </span>
-                <h1 className="font-heading text-4xl font-semibold leading-tight md:text-5xl">
-                  Your week in Springfield, at a glance
-                </h1>
-                <p className="max-w-2xl text-base text-muted-foreground md:text-lg">
-                  Markets, music, arts, sports, and family-friendly happenings — mapped and easy to filter.
-                </p>
-                <div className="flex flex-wrap items-center gap-3">
-                  <Button asChild>
-                    <Link href="#explore">Explore events</Link>
-                  </Button>
-                  <Button variant="outline" asChild>
-                    <Link href="#submit">Submit an event</Link>
-                  </Button>
-                </div>
-              </div>
+      <main className="min-h-screen bg-background">
+        <section className="bg-gradient-hero py-12 px-4 border-b border-border/40">
+          <div className="mx-auto max-w-6xl">
+            <Badge variant="secondary" className="mb-4">
+              Springfield • Next 7 Days
+            </Badge>
+            <h1 className="mb-3 text-3xl font-bold tracking-tight text-foreground md:text-4xl">
+              Your week in Springfield, at a glance
+            </h1>
+            <p className="mb-6 max-w-2xl text-base text-muted-foreground">
+              Markets, music, arts, sports, and family-friendly happenings — mapped and easy to filter.
+            </p>
+            <div className="flex flex-wrap items-center gap-4">
+              <Button size="default" asChild>
+                <a href="#events">Explore events</a>
+              </Button>
+              <Button size="default" variant="ghost" asChild>
+                <a href="/submit">Submit an event</a>
+              </Button>
             </div>
           </div>
         </section>
