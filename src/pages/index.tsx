@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react"
+import { useMemo, useState, useEffect } from "react"
 import dynamic from "next/dynamic"
 import Head from "next/head"
 import Link from "next/link"
@@ -11,22 +11,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Separator } from "@/components/ui/separator"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import type { MapProps } from "@/components/Map"
+import { fetchEventsNext7Days, type EventItem } from "@/services/eventService"
 
 type EventCategory = "Food" | "Music" | "Arts" | "Sports" | "Family"
-
-export interface EventItem {
-  id: string
-  title: string
-  description: string
-  category: EventCategory
-  start: string
-  end?: string
-  address: string
-  price: string
-  website: string
-  lat: number
-  lng: number
-}
 
 const Map = dynamic<MapProps<EventItem>>(
   () => import("@/components/Map").then(m => m.Map as unknown as React.ComponentType<MapProps<EventItem>>),
@@ -34,74 +21,6 @@ const Map = dynamic<MapProps<EventItem>>(
 )
 
 const categories: EventCategory[] = ["Food", "Music", "Arts", "Sports", "Family"]
-
-const demoEvents: EventItem[] = [
-  {
-    id: "1",
-    title: "Downtown Farmers' Market",
-    description: "Local produce, baked goods, and handmade crafts from Springfield vendors.",
-    category: "Food",
-    start: "2026-02-17T09:00:00Z",
-    end: "2026-02-17T13:00:00Z",
-    address: "100 Main St, Springfield",
-    price: "Free",
-    website: "https://example.com/farmers-market",
-    lat: 39.8015,
-    lng: -89.6437
-  },
-  {
-    id: "2",
-    title: "Live Jazz in the Park",
-    description: "An evening of smooth jazz with local artists. Bring a blanket!",
-    category: "Music",
-    start: "2026-02-18T23:00:00Z",
-    end: "2026-02-19T01:00:00Z",
-    address: "Riverside Park, Springfield",
-    price: "$10",
-    website: "https://example.com/jazz-park",
-    lat: 39.7969,
-    lng: -89.6502
-  },
-  {
-    id: "3",
-    title: "Family Art Workshop",
-    description: "Hands-on art activities for kids and parents. Materials provided.",
-    category: "Family",
-    start: "2026-02-20T16:00:00Z",
-    end: "2026-02-20T18:00:00Z",
-    address: "Community Arts Center, Springfield",
-    price: "Free (RSVP)",
-    website: "https://example.com/art-workshop",
-    lat: 39.7988,
-    lng: -89.6369
-  },
-  {
-    id: "4",
-    title: "Local Makers Pop-up",
-    description: "Discover crafts, jewelry, and design goods from Springfield makers.",
-    category: "Arts",
-    start: "2026-02-21T15:00:00Z",
-    end: "2026-02-21T21:00:00Z",
-    address: "Warehouse District, Springfield",
-    price: "Free",
-    website: "https://example.com/makers",
-    lat: 39.8032,
-    lng: -89.6481
-  },
-  {
-    id: "5",
-    title: "Community 5K Run",
-    description: "A friendly 5K through the historic district. All levels welcome.",
-    category: "Sports",
-    start: "2026-02-22T14:00:00Z",
-    end: "2026-02-22T15:00:00Z",
-    address: "Heritage Square, Springfield",
-    price: "$25",
-    website: "https://example.com/5k",
-    lat: 39.7951,
-    lng: -89.6408
-  }
-]
 
 function formatEventDate(iso: string): string {
   try {
@@ -120,9 +39,26 @@ export default function Home() {
   const [date, setDate] = useState<string>("")
   const [query, setQuery] = useState<string>("")
   const [selected, setSelected] = useState<EventItem | null>(null)
+  const [events, setEvents] = useState<EventItem[]>([])
+  const [loading, setLoading] = useState<boolean>(true)
+
+  useEffect(() => {
+    let mounted = true
+    ;(async () => {
+      setLoading(true)
+      const data = await fetchEventsNext7Days()
+      if (mounted) {
+        setEvents(data)
+        setLoading(false)
+      }
+    })()
+    return () => {
+      mounted = false
+    }
+  }, [])
 
   const filtered = useMemo(() => {
-    return demoEvents.filter(e => {
+    return events.filter(e => {
       const categoryOk = category === "All" ? true : e.category === category
       const dateOk = date ? e.start.slice(0, 10) === date : true
       const q = query.trim().toLowerCase()
@@ -133,7 +69,7 @@ export default function Home() {
         : true
       return categoryOk && dateOk && queryOk
     })
-  }, [category, date, query])
+  }, [events, category, date, query])
 
   return (
     <>
@@ -222,7 +158,11 @@ export default function Home() {
             <CardContent>
               <div className="grid gap-6 lg:grid-cols-2">
                 <div className="order-2 space-y-3 lg:order-1">
-                  {filtered.length === 0 ? (
+                  {loading ? (
+                    <div className="rounded-md border p-8 text-center text-sm text-muted-foreground">
+                      Loading events…
+                    </div>
+                  ) : filtered.length === 0 ? (
                     <div className="rounded-md border border-dashed p-8 text-center text-sm text-muted-foreground">
                       No events match your filters.
                     </div>
