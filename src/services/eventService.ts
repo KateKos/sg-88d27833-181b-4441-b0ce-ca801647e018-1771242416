@@ -14,6 +14,66 @@ export interface EventItem {
   lng: number
 }
 
+export type EventCategory = "Food" | "Music" | "Arts" | "Sports" | "Family"
+
+export interface CreateEventInput {
+  title: string
+  description: string
+  category: EventCategory
+  start: string
+  end: string
+  address: string
+  price: string
+  website?: string
+  lat: number
+  lng: number
+}
+
+export async function createEvent(input: CreateEventInput) {
+  const {
+    title,
+    description,
+    category,
+    start,
+    end,
+    address,
+    price,
+    website,
+    lat,
+    lng
+  } = input
+
+  const { data: userRes, error: userErr } = await supabase.auth.getUser()
+  if (userErr || !userRes?.user) {
+    return { data: null, error: userErr ?? new Error("Not authenticated") }
+  }
+
+  const organizerId = userRes.user.id
+
+  const { data, error } = await supabase
+    .from("events")
+    .insert([
+      {
+        title,
+        description,
+        category,
+        start,
+        end,
+        address,
+        price,
+        website: website ?? "",
+        lat,
+        lng,
+        status: "pending",
+        organizer_id: organizerId
+      }
+    ])
+    .select()
+    .maybeSingle()
+
+  return { data, error }
+}
+
 export async function fetchEventsNext7Days(): Promise<EventItem[]> {
   const now = new Date()
   const end = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000)
