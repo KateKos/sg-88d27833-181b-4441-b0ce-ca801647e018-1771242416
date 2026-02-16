@@ -101,7 +101,7 @@ export default function Home() {
                 <a href="#events">Explore events</a>
               </Button>
               <Button size="default" variant="ghost" asChild>
-                <a href="/submit">Submit an event</a>
+                <Link href="/submit">Submit an event</Link>
               </Button>
             </div>
           </div>
